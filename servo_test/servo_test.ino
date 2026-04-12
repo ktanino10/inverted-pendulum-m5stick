@@ -1,100 +1,91 @@
 /*
- * FS90R サーボモータ動作テスト for M5StickC Plus
+ * FS90R ピン探索テスト for M5StickC Plus
  *
- * 配線:
- *   サーボ1: PWM(橙)→G0,  VCC(赤)→5V, GND(茶)→GND
- *   サーボ2: PWM(橙)→G26, VCC(赤)→5V, GND(茶)→GND
+ * 全ピン(G0, G26, G25, G36)を順番に試して
+ * どのピンにサーボが繋がっているか確認するスケッチ
  *
- * 動作:
- *   起動時: 両サーボ停止（ニュートラル）
- *   Aボタン（M5ボタン）: 正転 → 逆転 → 停止 を順番に切り替え
- *   Bボタン（側面）:     両サーボ緊急停止
+ * Aボタン: 次のピンに切り替え
+ * Bボタン: 現在のピンでサーボ正転/停止トグル
  */
 
 #include <M5StickCPlus.h>
 #include <ESP32Servo.h>
 
-#define SERVO1_PIN 0
-#define SERVO2_PIN 26
+const int pins[] = {0, 26, 25, 36, 32, 33};
+const char* pinNames[] = {"G0", "G26", "G25", "G36", "G32", "G33"};
+const int pinCount = 6;
 
-// FS90R: 90=停止, <90=逆転, >90=正転
-#define NEUTRAL 90
-#define FORWARD 120
-#define REVERSE 60
-
-Servo servo1;
-Servo servo2;
-
-int state = 0; // 0:停止, 1:正転, 2:逆転
-
-void setServos(int val) {
-  servo1.write(val);
-  servo2.write(val);
-}
+int currentPin = 0;
+bool running = false;
+Servo servo;
 
 void updateDisplay() {
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(10, 10);
-  M5.Lcd.println("Servo Test");
-  M5.Lcd.setCursor(10, 40);
 
-  switch (state) {
-    case 0:
-      M5.Lcd.setTextColor(WHITE);
-      M5.Lcd.println("STOP");
-      break;
-    case 1:
-      M5.Lcd.setTextColor(GREEN);
-      M5.Lcd.println("FORWARD");
-      break;
-    case 2:
-      M5.Lcd.setTextColor(RED);
-      M5.Lcd.println("REVERSE");
-      break;
+  M5.Lcd.setTextColor(YELLOW);
+  M5.Lcd.setCursor(10, 10);
+  M5.Lcd.println("Pin Finder");
+
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setCursor(10, 40);
+  M5.Lcd.printf("Pin: %s", pinNames[currentPin]);
+
+  M5.Lcd.setCursor(10, 65);
+  if (running) {
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.println("RUNNING");
+  } else {
+    M5.Lcd.setTextColor(RED);
+    M5.Lcd.println("STOPPED");
   }
 
   M5.Lcd.setTextColor(WHITE);
-  M5.Lcd.setCursor(10, 80);
-  M5.Lcd.println("[A] Switch");
-  M5.Lcd.setCursor(10, 110);
-  M5.Lcd.println("[B] Stop");
+  M5.Lcd.setCursor(10, 100);
+  M5.Lcd.println("[A] Next Pin");
+  M5.Lcd.setCursor(10, 125);
+  M5.Lcd.println("[B] Run/Stop");
 }
 
 void setup() {
   M5.begin();
   M5.Lcd.setRotation(3);
-
-  servo1.attach(SERVO1_PIN);
-  servo2.attach(SERVO2_PIN);
-  setServos(NEUTRAL);
-
-  updateDisplay();
   Serial.begin(115200);
-  Serial.println("Servo test ready");
+
+  servo.attach(pins[currentPin]);
+  servo.write(90);
+  updateDisplay();
+  Serial.printf("Testing pin: %s\n", pinNames[currentPin]);
 }
 
 void loop() {
   M5.update();
 
-  // Aボタン: 停止→正転→逆転→停止...
+  // Aボタン: 次のピンへ
   if (M5.BtnA.wasPressed()) {
-    state = (state + 1) % 3;
-    switch (state) {
-      case 0: setServos(NEUTRAL); break;
-      case 1: setServos(FORWARD); break;
-      case 2: setServos(REVERSE); break;
-    }
+    servo.write(90);
+    servo.detach();
+    running = false;
+
+    currentPin = (currentPin + 1) % pinCount;
+    servo.attach(pins[currentPin]);
+    servo.write(90);
+
     updateDisplay();
-    Serial.printf("State: %d\n", state);
+    Serial.printf("Switched to pin: %s\n", pinNames[currentPin]);
   }
 
-  // Bボタン: 緊急停止
+  // Bボタン: 回転/停止トグル
   if (M5.BtnB.wasPressed()) {
-    state = 0;
-    setServos(NEUTRAL);
+    running = !running;
+    if (running) {
+      servo.write(130);
+      Serial.printf("Pin %s: RUNNING\n", pinNames[currentPin]);
+    } else {
+      servo.write(90);
+      Serial.printf("Pin %s: STOPPED\n", pinNames[currentPin]);
+    }
     updateDisplay();
-    Serial.println("Emergency stop");
   }
 
   delay(20);
