@@ -51,6 +51,16 @@ float kdst = 0.07;
 float kspd = 2.5;
 ```
 
+## 進捗ログ
+
+### 2026-04-13: 半田付け完了・サーボ動作確認
+
+- キット基板へのサーボ半田付けを完了
+- サーボ動作テスト (`servo_test.ino`) およびピン自動スキャン診断を実施
+- 配線修正後、サーボの動作を確認 ✅
+- 再半田付け中に M5StickC Plus が過熱・故障 → **部品交換待ち**
+- **次のステップ**: M5StickC Plus 交換後、メインファームウェア (`inverted_pendulum.ino`) の書き込み＆倒立テスト
+
 ## 参考
 
 - [Interface誌 記事ページ](https://interface.cqpub.co.jp/202509st/)
