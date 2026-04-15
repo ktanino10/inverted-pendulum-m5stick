@@ -93,6 +93,12 @@ float kspd = 2.5;
 - M5StickC Plus（新品交換）
 - デジタルテスター（通電前のショート確認用）
 
+### 📚 PID制御ガイド
+
+PID制御の基礎を初心者向けに解説したガイドを用意しました。ほうきバランスの例え話から、倒立振子への応用、パラメータ調整の手順まで、Interface誌の内容をベースにわかりやすくまとめています。
+
+👉 **[docs/pid_guide.md](docs/pid_guide.md)**
+
 ### 参考
 
 - [Interface誌 記事ページ](https://interface.cqpub.co.jp/202509st/)
@@ -164,6 +170,12 @@ Inspired by a feature article on inverted pendulums in [Interface Magazine (Sep 
 - M5StickC Plus overheated during re-soldering → likely PCB short damage
 - Unit unresponsive on USB connection → **awaiting replacement**
 - **Next**: After getting a new M5StickC Plus, test servos with jumper wires before soldering, then flash main firmware (`inverted_pendulum.ino`)
+
+### 📚 PID Control Guide
+
+A beginner-friendly guide explaining PID control basics — from the broom-balancing analogy to inverted pendulum application and parameter tuning. Based on the Interface Magazine article content.
+
+👉 **[docs/pid_guide.md](docs/pid_guide.md)**
 
 ### References
 
