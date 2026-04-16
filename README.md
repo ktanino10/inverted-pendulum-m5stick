@@ -160,6 +160,14 @@ float kspd = 2.5;
 - ボタン操作（Aボタンでスタート/ストップ）動作確認 ✅
 - **次のステップ**: サーボ2本接続して倒立テスト
 
+#### 2026-04-16: 息抜き — GitHub ステッカースライドショー 🐙
+
+倒立制御のデバッグの合間に、M5StickC Plus2 の画面に GitHub ステッカーを表示するスケッチを作成。Aボタンで Octocat → Copilot → Duck → Mascot を切り替え表示できる。
+
+- PNG/GIF 画像を Python（Pillow）で 110×110 に縮小し、RGB565 ビットマップに変換
+- **バイトオーダーの罠**: M5GFX（LovyanGFX）の `pushImage` はビッグエンディアン順の RGB565 を期待する。ESP32 はリトルエンディアンなので、各ピクセルの上位・下位バイトをスワップしないと色が崩れる
+- スケッチ: `octocat_display/octocat_display.ino`
+
 ### 📚 PID制御ガイド
 
 PID制御の基礎を初心者向けに解説したガイドを用意しました。ほうきバランスの例え話から、倒立振子への応用、パラメータ調整の手順まで、Interface誌の内容をベースにわかりやすくまとめています。
@@ -315,6 +323,14 @@ Inspired by a feature article on inverted pendulums in [Interface Magazine (Sep 
 - Main firmware (`inverted_pendulum.ino`) — ported and flashed ✅
 - Button control (A button start/stop toggle) confirmed ✅
 - **Next**: Connect both servos and attempt balancing test
+
+#### 2026-04-16: Fun break — GitHub Sticker Slideshow 🐙
+
+During a debugging break, created a sketch that displays GitHub stickers on the M5StickC Plus2 screen. Press A button to cycle through Octocat → Copilot → Duck → Mascot.
+
+- Converted PNG/GIF images to 110×110 RGB565 bitmaps using Python (Pillow)
+- **Byte order gotcha**: M5GFX (LovyanGFX) `pushImage` expects big-endian RGB565, but ESP32 is little-endian. Without byte-swapping each pixel, colors appear corrupted (reds and blues swap)
+- Sketch: `octocat_display/octocat_display.ino`
 
 ### 📚 PID Control Guide
 
