@@ -27,19 +27,20 @@
 // ============================================================
 //  ハードウェア設定
 // ============================================================
-#define SERVO1_PIN  25
+#define SERVO1_PIN  0
 #define SERVO2_PIN  26
 
 // サーボニュートラル補正 (個体差調整)
-// FS90Rの停止点が90°からずれている場合に調整
-// 正の値 → 正転方向にオフセット、負の値 → 逆転方向
 #define SERVO1_TRIM  0
-#define SERVO2_TRIM  -15   // G26側の補正（方向反転）
+#define SERVO2_TRIM  0
+// サーボ出力スケール（0.0〜1.0）— 個体差で速すぎる方を下げる
+#define SERVO1_SCALE 0.1   // G25側を10%に制限
+#define SERVO2_SCALE 1.0   // G26側はそのまま
 
 // ============================================================
 //  PID パラメータ (Interface誌デフォルト値)
 // ============================================================
-float kpower = 0.001;
+float kpower = 0.0001;
 float kp     = 21.0;
 float ki     = 7.0;
 float kd     = 1.6;
@@ -135,9 +136,11 @@ void setMotors(int output) {
   output = constrain(output, -MOTOR_LIMIT, MOTOR_LIMIT);
   motorOutput = output;
   int cmd = MOTOR_SIGN * output;
-  // 左右サーボは鏡像配置のため逆回転 + 個体差補正
-  servo1.write(90 + SERVO1_TRIM + cmd);
-  servo2.write(90 + SERVO2_TRIM - cmd);
+  // 両サーボ同方向（取り付けが同じ向き）+ 個体差補正
+  int cmd1 = (int)(cmd * SERVO1_SCALE);
+  int cmd2 = (int)(cmd * SERVO2_SCALE);
+  servo1.write(90 + SERVO1_TRIM + cmd1);
+  servo2.write(90 + SERVO2_TRIM + cmd2);
 }
 
 void stopMotors() {
