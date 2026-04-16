@@ -137,6 +137,9 @@ void setMotors(int output) {
 void stopMotors() {
   servo1.write(90);
   servo2.write(90);
+  delay(20);
+  servo1.detach();
+  servo2.detach();
   motorOutput = 0;
 }
 
@@ -235,6 +238,9 @@ void updateDisplay() {
 // ============================================================
 
 void startControl() {
+  // サーボ再アタッチ
+  servo1.attach(SERVO1_PIN);
+  servo2.attach(SERVO2_PIN);
   // 現在の角度を直立基準としてキャリブレーション
   angleOffset = getAccAngle();
   kalmanFilter.setAngle(angleOffset);
@@ -307,20 +313,14 @@ void loop() {
   StickCP2.update();
   unsigned long now = millis();
 
-  // ---- ボタン処理 (M5 長押し) ----
-  if (StickCP2.BtnA.wasPressed()) {
-    btnDownTime = now;
-    btnIsDown = true;
-  }
+  // ---- ボタン処理 ----
+  // Aボタン: 離した瞬間にトグル
   if (StickCP2.BtnA.wasReleased()) {
-    if (btnIsDown && (now - btnDownTime >= LONG_PRESS_MS)) {
-      if (state == IDLE) {
-        startControl();
-      } else {
-        stopControl();
-      }
+    if (state == IDLE) {
+      startControl();
+    } else {
+      stopControl();
     }
-    btnIsDown = false;
   }
 
   // ---- 制御ループ (100 Hz) ----
