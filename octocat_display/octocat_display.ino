@@ -1,10 +1,10 @@
 /*
  * GitHub Sticker Animated Display for M5StickC Plus2
  * 全キャラ90°反時計回り回転（倒立振子搭載時に正面を向く）
+ * 同サイズ110x110で統一（静止画もGIFも同じ大きさ）
  *
  * Aボタン: 静止画切替 (Octocat/Copilot/Duck/Mascot)
- * Bボタン: 現在のキャラのGIFアニメ再生/停止
- *         (Octocatは静止画のみ)
+ * Bボタン: GIFアニメ再生/停止 (Copilot/Duck対応)
  */
 
 #include <M5StickCPlus2.h>
@@ -15,21 +15,18 @@
 #include "duck_img.h"
 #include "mascot_img.h"
 
-// アニメーション (60x60, rotated 90° CCW)
+// アニメーション (110x110, rotated 90° CCW)
 #include "copilot_anim.h"
 #include "duck_anim.h"
-#include "mascot_anim.h"
 
 #define IMG_W 110
 #define IMG_H 110
 #define BG    0x0861
 
-// 静止画
 const uint16_t* images[] = {octocat_img, copilot_img, duck_img, mascot_img};
 const char* names[] = {"Octocat", "Copilot", "Duck", "Mascot"};
 const int imgCount = 4;
 
-// アニメーション情報
 struct AnimInfo {
   const uint16_t* const* frames;
   int frameCount;
@@ -37,10 +34,10 @@ struct AnimInfo {
 };
 
 const AnimInfo anims[] = {
-  {NULL, 0, 0, 0},                                           // Octocat: no anim
-  {copilot_anim, COPILOT_ANIM_FRAMES, COPILOT_ANIM_W, COPILOT_ANIM_H},
-  {duck_anim, DUCK_ANIM_FRAMES, DUCK_ANIM_W, DUCK_ANIM_H},
-  {mascot_anim, MASCOT_ANIM_FRAMES, MASCOT_ANIM_W, MASCOT_ANIM_H},
+  {NULL, 0, 0, 0},                                                        // Octocat
+  {copilot_anim, COPILOT_ANIM_FRAMES, COPILOT_ANIM_W, COPILOT_ANIM_H},   // Copilot
+  {duck_anim, DUCK_ANIM_FRAMES, DUCK_ANIM_W, DUCK_ANIM_H},               // Duck
+  {NULL, 0, 0, 0},                                                        // Mascot
 };
 
 int current = 0;
@@ -67,7 +64,7 @@ void showImage(int idx) {
 void showAnimFrame() {
   const AnimInfo& a = anims[current];
   int ox = (240 - a.w) / 2;
-  int oy = (110 - a.h) / 2;
+  int oy = 0;
   const uint16_t* frame = (const uint16_t*)pgm_read_ptr(&a.frames[animFrame]);
   StickCP2.Display.pushImage(ox, oy, a.w, a.h, frame);
 }
@@ -102,7 +99,7 @@ void loop() {
   StickCP2.update();
   
   if (animMode) {
-    if (millis() - lastFrameMs >= 60) {
+    if (millis() - lastFrameMs >= 80) {
       animFrame = (animFrame + 1) % anims[current].frameCount;
       showAnimFrame();
       lastFrameMs = millis();
