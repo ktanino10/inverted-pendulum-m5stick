@@ -47,7 +47,7 @@ int motor_offsetR = 0;
 //  PID パラメータ（チューニング用：初期値0、ボタンで調整）
 // ============================================================
 float kpower = 0.003;   // 全体スケール（固定）
-float kp     = 0.0;     // P項: BtnBで調整
+float kp     = 6.0;     // P項: n_shinichi氏の値に近い初期値
 float ki     = 0.0;     // I項
 float kd     = 0.0;     // D項
 float kspd   = 0.0;     // 速度補正
@@ -319,13 +319,18 @@ void loop() {
 
   // 10ms制御ループ (100Hz)
   if (millis() > ms10) {
-    if (-ANGLE_LIMIT < Pitch_filter && Pitch_filter < ANGLE_LIMIT) {
-      wait_count++;
-      if (wait_count > 50) {
-        PID_ctrl();
+    if (motor_sw == 1) {
+      if (-ANGLE_LIMIT < Angle && Angle < ANGLE_LIMIT) {
+        wait_count++;
+        if (wait_count > 50) {
+          PID_ctrl();
+        }
+      } else {
+        PID_reset();
+        servo_stop();
+        motor_sw = 0;
+        Serial.println("!!! ANGLE LIMIT - emergency stop !!!");
       }
-    } else {
-      PID_reset();
     }
     ms10 += 10;
   }
@@ -334,11 +339,9 @@ void loop() {
   if (millis() > ms100) {
     updateDisplay();
     
-    // シリアルCSVログ（ROOT用データ収集）
-    if (motor_sw == 1) {
-      Serial.printf("DATA,%lu,%.2f,%.2f,%d,%d,%.2f,%.2f,%.2f,%.2f,%.2f\n",
-        millis(), Angle, dAngle, powerL, powerR, kp, kd, ki, kspd, kdst);
-    }
+    // シリアルCSVログ（常時出力）
+    Serial.printf("DATA,%lu,%.1f,%.1f,%d,%d,%.1f,%.1f,%.1f,%d\n",
+      millis(), Angle, Pitch_filter, powerL, powerR, kp, kd, ki, motor_sw);
     
     // BtnA短押し: モーターON/OFF、長押し: パラメータ切替
     static unsigned long btnA_down = 0;
