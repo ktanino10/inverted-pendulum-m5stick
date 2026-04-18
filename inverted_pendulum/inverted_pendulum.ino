@@ -168,7 +168,7 @@ void get_Angle() {
   lastUs = micros();
   Pitch = kalman.getAngle(getPitch(), gyro[0], dt);
   Pitch_filter = (Pitch + Pitch_filter * (FIL_N - 1)) / FIL_N;
-  Angle = Pitch_filter - Pitch_offset;
+  Angle = Pitch - Pitch_offset;
 }
 
 // ============================================================
@@ -294,6 +294,16 @@ void setup() {
   readIMU();
   kalman.setAngle(getPitch());
   lastUs = micros();
+  
+  // 初期角度を取得するために一度 get_Angle() を呼ぶ
+  for (int i = 0; i < 100; i++) {
+    get_Angle();
+    delay(5);
+  }
+  // カルマンフィルタ + IMUキャリブレーション後は Pitch ≈ 0
+  // Pitch_offset は不要（ONにした瞬間に再設定）
+  Pitch_offset = 0;
+  Serial.printf("Pitch=%.1f, Pitch_offset=%.1f\n", Pitch, Pitch_offset);
 
   // 画面初期化
   StickCP2.Display.fillScreen(BLACK);
@@ -338,9 +348,9 @@ void loop() {
   if (millis() > ms100) {
     updateDisplay();
     
-    // シリアルCSVログ（常時出力）
-    Serial.printf("DATA,%lu,%.1f,%.1f,%d,%d,%.1f,%.1f,%.1f,%d\n",
-      millis(), Angle, Pitch_filter, powerL, powerR, kp, kd, ki, motor_sw);
+    // シリアルCSVログ（デバッグ用：全変数出力）
+    Serial.printf("DBG,Pitch=%.1f,PF=%.1f,PO=%.1f,Angle=%.1f,pL=%d,pR=%d,sw=%d\n",
+      Pitch, Pitch_filter, Pitch_offset, Angle, powerL, powerR, motor_sw);
     
     // BtnA短押し: モーターON/OFF、長押し: パラメータ切替
     static unsigned long btnA_down = 0;
