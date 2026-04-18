@@ -129,7 +129,7 @@ void readIMU() {
   M5.Imu.getAccel(&ax, &ay, &az);
   gyro[0] = gx; gyro[1] = gy; gyro[2] = gz;
   acc[0] = ax;  acc[1] = ay;  acc[2] = az;
-  dAngle = gyro[0] - gyroOffset[0];
+  dAngle = -(gyro[2] - gyroOffset[2]);  // Z軸ジャイロ（前後の回転）
 }
 
 void calibrateIMU() {
@@ -155,7 +155,9 @@ void applyCalibration() {
 }
 
 float getPitch() {
-  return atan2(acc[1], acc[2]) * RAD_TO_DEG;
+  // Plus2直立時: Z軸が前後傾き（前=Z-、後ろ=Z+）
+  // Y軸が重力方向
+  return atan2(-acc[2], acc[1]) * RAD_TO_DEG;
 }
 
 // ============================================================
@@ -166,7 +168,7 @@ void get_Angle() {
   applyCalibration();
   float dt = (micros() - lastUs) / 1000000.0;
   lastUs = micros();
-  Pitch = kalman.getAngle(getPitch(), gyro[0], dt);
+  Pitch = kalman.getAngle(getPitch(), -gyro[2], dt);  // Z軸ジャイロ
   Pitch_filter = (Pitch + Pitch_filter * (FIL_N - 1)) / FIL_N;
   Angle = Pitch - Pitch_offset;
 }
@@ -338,9 +340,9 @@ void loop() {
   if (millis() > ms100) {
     updateDisplay();
     
-    // シリアルCSVログ
-    Serial.printf("DBG,A=%.1f,pw=%d,pL=%d,pR=%d,sw=%d\n",
-      Angle, power, powerL, powerR, motor_sw);
+    // シリアルCSVログ — 生加速度全軸ダンプ
+    Serial.printf("RAW,ax=%.2f,ay=%.2f,az=%.2f,Pitch=%.1f,Angle=%.1f\n",
+      acc[0], acc[1], acc[2], Pitch, Angle);
     
     // BtnA短押し: モーターON/OFF、長押し: パラメータ切替
     static unsigned long btnA_down = 0;
