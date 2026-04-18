@@ -184,7 +184,7 @@ void PID_reset() {
 
 void PID_ctrl() {
   // シンプルP制御のみ（まず方向確認用）
-  power = (int16_t)(kp * Angle);
+  power = (int16_t)(-kp * Angle);  // 符号反転: 倒れる方向に追いかける
   power = constrain(power, -500, 500);
 
   if (motor_sw == 1) {
