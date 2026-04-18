@@ -32,9 +32,9 @@
 int motor_offsetL = 0, motor_offsetR = 0;
 int16_t motor_init_L = 1500, motor_init_R = 1500;
 float kpower = 0.003;
-float kp = 30.0;
-float ki = 3.0;
-float kd = 2.0;
+float kp = 150.0;
+float ki = 10.0;
+float kd = 8.0;
 float kspd = 5.0;
 float kdst = 0.14;
 float Pitch_offset2 = 0.0;
@@ -49,6 +49,7 @@ long lastMs = 0;
 float acc[3], accOffset[3];
 float gyro[3], gyroOffset[3];
 float Pitch, Pitch_filter, Angle;
+float Pitch_offset = 0;  // ONにした瞬間の直立角度
 float dAngle;
 int wait_count;
 unsigned char motor_sw = 0;
@@ -105,7 +106,7 @@ void get_Angle() {
   lastMs = micros();
   Pitch = kalman.getAngle(getPitch(), gyro[2], dt) + Pitch_offset2 + Pitch_power;
   Pitch_filter = (Pitch + Pitch_filter * (fil_N - 1)) / fil_N;
-  Angle = Pitch_filter;
+  Angle = Pitch_filter - Pitch_offset;
 }
 
 // ============================================================
@@ -169,8 +170,10 @@ void processSerial() {
   cmd.trim();
 
   if (cmd == "on") {
-    motor_sw = 1; PID_reset();
-    Serial.println("Motor ON");
+    motor_sw = 1; 
+    Pitch_offset = Pitch_filter;  // 今の角度を直立基準に
+    PID_reset();
+    Serial.printf("Motor ON (offset=%.1f)\n", Pitch_offset);
   }
   else if (cmd == "off") {
     motor_sw = 0; PID_reset(); servo_stop();
@@ -309,8 +312,11 @@ void loop() {
     if (digitalRead(BTN_A) == 0) {
       motor_sw = !motor_sw;
       if (motor_sw == 0) { PID_reset(); servo_stop(); }
-      else { PID_reset(); }
-      Serial.printf("Motor: %s\n", motor_sw ? "ON" : "OFF");
+      else { 
+        Pitch_offset = Pitch_filter;  // 今の角度を直立基準にする
+        PID_reset(); 
+      }
+      Serial.printf("Motor: %s (offset=%.1f)\n", motor_sw ? "ON" : "OFF", Pitch_offset);
       delay(300);
     }
 
