@@ -32,9 +32,9 @@
 int motor_offsetL = 0, motor_offsetR = 0;
 int16_t motor_init_L = 1500, motor_init_R = 1500;
 float kpower = 0.003;
-float kp = 150.0;
-float ki = 10.0;
-float kd = 8.0;
+float kp = 120.0;
+float ki = 5.0;
+float kd = 20.0;
 float kspd = 5.0;
 float kdst = 0.14;
 float Pitch_offset2 = 0.0;
