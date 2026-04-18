@@ -172,8 +172,6 @@ float kspd = 2.5;
 
 前回（4/16）の試行錯誤を踏まえ、ゼロからやり直し。n_shinichi氏のオリジナル実装を調査した結果、**ESP32Servo ライブラリが根本原因**と判明。手動パルス生成（`pulse_drive`）方式に全面書き換えし、**G0 + G26 の両サーボが同じ勢いで安定駆動に成功**。
 
-<img src="media/servo_test_20260418.jpg" width="400" alt="両輪サーボ駆動テスト成功">
-
 <!-- YouTube: 両輪サーボ駆動テスト -->
 [![両輪サーボ駆動テスト](https://img.youtube.com/vi/syauXEm0TFY/0.jpg)](https://www.youtube.com/watch?v=syauXEm0TFY)
 
@@ -357,8 +355,6 @@ During a debugging break, created a sketch that displays GitHub stickers on the 
 #### 2026-04-18: Full restart — Both servos running with pulse_drive 🎉
 
 After the 4/16 struggles, started completely fresh. Research into n_shinichi's original code revealed **ESP32Servo library was the root cause**. Rewrote everything using manual pulse generation (`pulse_drive`), and **both servos (G0 + G26) now run at equal speed stably**.
-
-<img src="media/servo_test_20260418.jpg" width="400" alt="Both servos running successfully">
 
 <!-- YouTube: Dual servo test -->
 [![Dual servo drive test](https://img.youtube.com/vi/syauXEm0TFY/0.jpg)](https://www.youtube.com/watch?v=syauXEm0TFY)
